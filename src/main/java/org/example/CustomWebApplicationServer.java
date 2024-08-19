@@ -1,6 +1,7 @@
 package org.example;
 
 
+import ch.qos.logback.core.net.server.Client;
 import org.example.calculator.domain.Calculator;
 import org.example.calculator.domain.PositiveNumber;
 import org.slf4j.Logger;
@@ -10,10 +11,14 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CustomWebApplicationServer {
 
     private final int port;
+
+    private final ExecutorService excutorService = Executors.newFixedThreadPool(18);
 
     private static final Logger logger = LoggerFactory.getLogger(CustomWebApplicationServer.class); //로그추가
 
@@ -33,9 +38,10 @@ public class CustomWebApplicationServer {
                 logger.info("[CustomWebApplicationServer] client connected.]");
 
 
-                //2. 사용자 요청이 들어올 때마다 스레드를 새로 생성해서  요청을 처리하도록 한다.
+                //3. 스레드 pool 이용해서 안정적인 서비스 가능하도록 함.
 
-                new Thread(new ClientRequestHandler(clientSocket)).start();
+                excutorService.execute(new ClientRequestHandler(clientSocket));
+
 
             }
         }
